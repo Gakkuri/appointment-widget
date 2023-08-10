@@ -7,6 +7,9 @@ export default defineConfig({
   plugins: [react(), cssInjectedByJsPlugin()],
   build: {
     rollupOptions: {
+      input: {
+        widget: "./index.html",
+      },
       output: {
         manualChunks: undefined,
       },

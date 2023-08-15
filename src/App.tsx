@@ -20,10 +20,7 @@ import Contact from "./components/request-form/contact";
 export type Request = {
   service?: string;
   location?: string;
-  datetime?: {
-    date?: Date;
-    time?: string;
-  };
+  datetime?: string;
   client?: string;
 };
 
@@ -36,11 +33,26 @@ export type RequestFormProps = {
 };
 
 const steps = [
-  "Service",
-  "Select Location",
-  "Select Date & Time",
-  "Select Client",
-  "Contact Information",
+  {
+    key: "service",
+    label: "Service",
+  },
+  {
+    key: "location",
+    label: "Select Location",
+  },
+  {
+    key: "datetime",
+    label: "Select Date & Time",
+  },
+  {
+    key: "client",
+    label: "Select Client",
+  },
+  {
+    key: "service",
+    label: "Contact Information",
+  },
 ];
 
 function App() {
@@ -121,10 +133,11 @@ function App() {
             {steps.map((step, i) => (
               <Step
                 onClick={() => i <= currentPage && setCurrentPage(--i)}
-                key={step + i}
+                key={step.key + i}
                 step={++i}
-                label={step}
+                label={step.label}
                 isFinished={i <= currentPage}
+                value={requestValues?.[step.key] || ""}
               />
             ))}
           </div>

@@ -46,8 +46,7 @@ const Contact = ({ requestValues }: RequestFormProps) => {
     alert(`
     Service: ${rValues?.service},
     Location: ${rValues?.location},
-    Date: ${rValues?.datetime?.date},
-    Time: ${rValues?.datetime?.time},
+    Date & Time: ${rValues?.datetime},
     Client: ${rValues?.client},
     Information (You)
       First Name: ${values?.you?.first_name},

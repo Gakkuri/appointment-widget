@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import * as z from "zod";
 import "./App.css";
 
 import {
@@ -15,7 +17,7 @@ import Service from "./components/request-form/service";
 import Location from "./components/request-form/location";
 import Datetime from "./components/request-form/datetime";
 import Client from "./components/request-form/client";
-import Contact from "./components/request-form/contact";
+import Contact, { formSchema } from "./components/request-form/contact";
 
 export type Request = {
   service?: string;
@@ -30,6 +32,15 @@ export type RequestFormProps = {
     Request | undefined,
     React.Dispatch<React.SetStateAction<Request | undefined>>
   ];
+};
+
+export interface RequestWithSubmit extends RequestFormProps {
+  onPayment: (values: z.infer<typeof formSchema>) => void;
+}
+
+type Steps = {
+  key: string;
+  label: string;
 };
 
 const steps = [
@@ -59,15 +70,24 @@ function App() {
   const [currentPage, setCurrentPage] = useState(0);
   const [requestValues, setRequestValues] = useState<Request | undefined>();
 
-  // console.log(requestValues);
+  useEffect(() => {
+    const searchParams = new URLSearchParams(document.location.search);
+    if (searchParams.get("widgetCheckoutDone")) alert("Payment Successful!");
+  }, []);
 
   const onChangePage = (addition: number) => {
     setCurrentPage((current) => current + addition);
   };
 
-  // const onSubmit = () => {
-  //   console.log("test");
-  // };
+  const onPayment = async (values: z.infer<typeof formSchema>) => {
+    const redirectUrl = `${window.location.href}?widgetCheckoutDone=true`;
+    const payerValue = values.you;
+    const { data } = await axios.get(
+      `https://simple-backend-pi.vercel.app/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}`
+      // `http://localhost:3000/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}&phone=${payerValue.phone}`
+    );
+    window.location.href = data.url;
+  };
 
   const Pages = () => {
     switch (currentPage) {
@@ -109,6 +129,7 @@ function App() {
           <Contact
             onChangePage={onChangePage}
             requestValues={[requestValues, setRequestValues]}
+            onPayment={onPayment}
           />
         );
 
@@ -130,16 +151,18 @@ function App() {
         <div className="flex">
           {/* Left Pane */}
           <div id="steps" className="flex flex-col grow-0 shrink-0 basis-1/4">
-            {steps.map((step, i) => (
-              <Step
-                onClick={() => i <= currentPage && setCurrentPage(--i)}
-                key={step.key + i}
-                step={++i}
-                label={step.label}
-                isFinished={i <= currentPage}
-                value={requestValues?.[step.key] || ""}
-              />
-            ))}
+            {steps.map((step: Steps, i) => {
+              return (
+                <Step
+                  onClick={() => i <= currentPage && setCurrentPage(--i)}
+                  key={step.key + i}
+                  step={++i}
+                  label={step.label}
+                  isFinished={i <= currentPage}
+                  value={requestValues?.[step.key]}
+                />
+              );
+            })}
           </div>
           {/* Right Pane */}
           <ScrollArea className="h-[500px] w-full rounded-md border p-4">

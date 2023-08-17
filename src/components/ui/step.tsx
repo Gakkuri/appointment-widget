@@ -5,7 +5,7 @@ type StepProps = {
   label: string;
   isFinished?: boolean;
   onClick: () => void;
-  value?: string;
+  value: string;
 };
 
 const Step = ({ step, label, isFinished, onClick, value }: StepProps) => {
@@ -28,7 +28,7 @@ const Step = ({ step, label, isFinished, onClick, value }: StepProps) => {
       </div>
       {isFinished && (
         <div className="mx-8">
-          <p className="text-green-600">{value}</p>
+          <p className="text-green-600">{`${value}`}</p>
         </div>
       )}
     </>

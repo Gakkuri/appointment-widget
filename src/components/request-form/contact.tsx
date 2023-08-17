@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -13,9 +14,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import { RequestFormProps } from "@/App";
+import { RequestWithSubmit } from "@/App";
+import { useState } from "react";
 
-const formSchema = z.object({
+export const formSchema = z.object({
   you: z.object({
     first_name: z.string().min(2).max(50),
     last_name: z.string().min(2).max(50),
@@ -34,8 +36,9 @@ const formSchema = z.object({
     .optional(),
 });
 
-const Contact = ({ requestValues }: RequestFormProps) => {
+const Contact = ({ requestValues, onPayment }: RequestWithSubmit) => {
   const [rValues] = requestValues;
+  const [loading, setLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,24 +46,28 @@ const Contact = ({ requestValues }: RequestFormProps) => {
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log({ ...rValues, information: values });
-    alert(`
-    Service: ${rValues?.service},
-    Location: ${rValues?.location},
-    Date & Time: ${rValues?.datetime},
-    Client: ${rValues?.client},
-    Information (You)
-      First Name: ${values?.you?.first_name},
-      Last Name: ${values?.you?.last_name},
-      Email: ${values?.you?.email},
-      Phone: ${values?.you?.phone},
-      Date of Birth: ${values?.you?.birth_date},
-    Information (Client)
-      First Name: ${values?.client?.first_name},
-      Last Name: ${values?.client?.last_name},
-      Email: ${values?.client?.email},
-      Phone: ${values?.client?.phone},
-      Date of Birth: ${values?.client?.birth_date},
-    `);
+    setLoading(true);
+
+    onPayment(values);
+
+    // alert(`
+    // Service: ${rValues?.service},
+    // Location: ${rValues?.location},
+    // Date & Time: ${rValues?.datetime},
+    // Client: ${rValues?.client},
+    // Information (You)
+    //   First Name: ${values?.you?.first_name},
+    //   Last Name: ${values?.you?.last_name},
+    //   Email: ${values?.you?.email},
+    //   Phone: ${values?.you?.phone},
+    //   Date of Birth: ${values?.you?.birth_date},
+    // Information (Client)
+    //   First Name: ${values?.client?.first_name},
+    //   Last Name: ${values?.client?.last_name},
+    //   Email: ${values?.client?.email},
+    //   Phone: ${values?.client?.phone},
+    //   Date of Birth: ${values?.client?.birth_date},
+    // `);
   };
 
   return (
@@ -202,7 +209,10 @@ const Contact = ({ requestValues }: RequestFormProps) => {
             />
           </>
         )}
-        <Button type="submit">Submit</Button>
+        <Button type="submit" disabled={loading}>
+          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Submit
+        </Button>
       </form>
     </Form>
   );

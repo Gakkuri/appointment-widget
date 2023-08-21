@@ -18,6 +18,8 @@ import Location from "./components/request-form/location";
 import Datetime from "./components/request-form/datetime";
 import Client from "./components/request-form/client";
 import Contact, { formSchema } from "./components/request-form/contact";
+import { Button } from "./components/ui/button";
+import Concent from "./components/signature/concent";
 
 export type Request = {
   service?: string;
@@ -69,6 +71,7 @@ const steps = [
 function App() {
   const [currentPage, setCurrentPage] = useState(0);
   const [requestValues, setRequestValues] = useState<Request | undefined>();
+  const [htmlString, setHtmlString] = useState<string | undefined>();
 
   useEffect(() => {
     const searchParams = new URLSearchParams(document.location.search);
@@ -83,10 +86,16 @@ function App() {
     const redirectUrl = `${window.location.href}?widgetCheckoutDone=true`;
     const payerValue = values.you;
     const { data } = await axios.get(
-      `https://simple-backend-pi.vercel.app/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}`
-      // `http://localhost:3000/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}&phone=${payerValue.phone}`
+      // `https://simple-backend-pi.vercel.app/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}`
+      `http://localhost:3000/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}&phone=${payerValue.phone}`
     );
     window.location.href = data.url;
+  };
+
+  const onSignature = async () => {
+    const { data } = await axios.get("http://localhost:3000/api/signature");
+    console.log(data);
+    window.open(data.auth);
   };
 
   const Pages = () => {
@@ -137,13 +146,13 @@ function App() {
         return <p>Nothing Here</p>;
     }
   };
-
   return (
     <Dialog>
       <DialogTrigger className="fixed bottom-10 right-10 bg-slate-600 py-2 px-4 text-white rounded-full">
         Appointment
       </DialogTrigger>
       <DialogContent className="max-w-4xl">
+        <Button onClick={onSignature}>Signature</Button>
         <DialogHeader>
           <DialogTitle>Request an appointment</DialogTitle>
           <DialogDescription></DialogDescription>

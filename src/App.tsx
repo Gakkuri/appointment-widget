@@ -86,15 +86,16 @@ function App() {
     const redirectUrl = `${window.location.href}?widgetCheckoutDone=true`;
     const payerValue = values.you;
     const { data } = await axios.get(
-      // `https://simple-backend-pi.vercel.app/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}`
-      `http://localhost:3000/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}&phone=${payerValue.phone}`
+      `https://simple-backend-pi.vercel.app/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}`
+      // `http://localhost:3000/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}&phone=${payerValue.phone}`
     );
     window.location.href = data.url;
   };
 
   const onSignature = async () => {
     const { data } = await axios.get(
-      `http://localhost:3000/api/request-auth?redirect=${window.location.href}`
+      `https://simple-backend-pi.vercel.app/api/request-auth?redirect=${window.location.href}`
+      // `http://localhost:3000/api/request-auth?redirect=${window.location.href}`
     );
     console.log(data);
     window.open(data.auth);

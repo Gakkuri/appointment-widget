@@ -93,7 +93,9 @@ function App() {
   };
 
   const onSignature = async () => {
-    const { data } = await axios.get("http://localhost:3000/api/signature");
+    const { data } = await axios.get(
+      `http://localhost:3000/api/request-auth?redirect=${window.location.href}`
+    );
     console.log(data);
     window.open(data.auth);
   };

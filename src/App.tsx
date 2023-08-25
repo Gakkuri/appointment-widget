@@ -18,8 +18,6 @@ import Location from "./components/request-form/location";
 import Datetime from "./components/request-form/datetime";
 import Client from "./components/request-form/client";
 import Contact, { formSchema } from "./components/request-form/contact";
-import { Button } from "./components/ui/button";
-import Concent from "./components/signature/concent";
 
 export type Request = {
   service?: string;
@@ -86,8 +84,8 @@ function App() {
     const redirectUrl = `${window.location.href}?widgetCheckoutDone=true`;
     const payerValue = values.you;
     const { data } = await axios.get(
-      // `https://simple-backend-pi.vercel.app/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}`
-      `http://localhost:3000/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}&phone=${payerValue.phone}`
+      `https://simple-backend-pi.vercel.app/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}`
+      // `http://localhost:3000/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}&phone=${payerValue.phone}`
     );
     window.location.href = data.url;
   };
@@ -103,8 +101,8 @@ function App() {
 
   const onSignature = async (values: z.infer<typeof formSchema>) => {
     const { data } = await axios.get(
-      // `https://simple-backend-pi.vercel.app/api/request-auth?redirect=${window.location.href}`
-      `http://localhost:3000/api/signature?redirect=${window.location.href}&signerEmail=${values.you.email}&signerName=${values.you.first_name} ${values.you.last_name}`
+      `https://simple-backend-pi.vercel.app/api/signature?redirect=${window.location.href}&signerEmail=${values.you.email}&signerName=${values.you.first_name} ${values.you.last_name}`
+      // `http://localhost:3000/api/signature?redirect=${window.location.href}&signerEmail=${values.you.email}&signerName=${values.you.first_name} ${values.you.last_name}`
     );
     console.log(data);
     alert("Document successfully sent to your email!");

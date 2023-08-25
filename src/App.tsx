@@ -38,6 +38,7 @@ export type RequestFormProps = {
 
 export interface RequestWithSubmit extends RequestFormProps {
   onPayment: (values: z.infer<typeof formSchema>) => void;
+  onSignature: (values: z.infer<typeof formSchema>) => void;
 }
 
 type Steps = {
@@ -71,7 +72,6 @@ const steps = [
 function App() {
   const [currentPage, setCurrentPage] = useState(0);
   const [requestValues, setRequestValues] = useState<Request | undefined>();
-  const [htmlString, setHtmlString] = useState<string | undefined>();
 
   useEffect(() => {
     const searchParams = new URLSearchParams(document.location.search);
@@ -86,19 +86,28 @@ function App() {
     const redirectUrl = `${window.location.href}?widgetCheckoutDone=true`;
     const payerValue = values.you;
     const { data } = await axios.get(
-      `https://simple-backend-pi.vercel.app/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}`
-      // `http://localhost:3000/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}&phone=${payerValue.phone}`
+      // `https://simple-backend-pi.vercel.app/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}`
+      `http://localhost:3000/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}&phone=${payerValue.phone}`
     );
     window.location.href = data.url;
   };
 
-  const onSignature = async () => {
+  // const onGetConsent = async () => {
+  //   const { data } = await axios.get(
+  //     // `https://simple-backend-pi.vercel.app/api/request-auth?redirect=${window.location.href}`
+  //     `http://localhost:3000/api/request-auth?redirect=${window.location.href}`
+  //   );
+
+  //   window.open(data.auth);
+  // };
+
+  const onSignature = async (values: z.infer<typeof formSchema>) => {
     const { data } = await axios.get(
-      `https://simple-backend-pi.vercel.app/api/request-auth?redirect=${window.location.href}`
-      // `http://localhost:3000/api/request-auth?redirect=${window.location.href}`
+      // `https://simple-backend-pi.vercel.app/api/request-auth?redirect=${window.location.href}`
+      `http://localhost:3000/api/signature?redirect=${window.location.href}&signerEmail=${values.you.email}&signerName=${values.you.first_name} ${values.you.last_name}`
     );
     console.log(data);
-    window.open(data.auth);
+    alert("Document successfully sent to your email!");
   };
 
   const Pages = () => {
@@ -142,6 +151,7 @@ function App() {
             onChangePage={onChangePage}
             requestValues={[requestValues, setRequestValues]}
             onPayment={onPayment}
+            onSignature={onSignature}
           />
         );
 
@@ -155,7 +165,8 @@ function App() {
         Appointment
       </DialogTrigger>
       <DialogContent className="max-w-4xl">
-        <Button onClick={onSignature}>Signature</Button>
+        {/* <Button onClick={onGetConsent}>Get Consent</Button>
+        <Button onClick={onSignature}>Signature</Button> */}
         <DialogHeader>
           <DialogTitle>Request an appointment</DialogTitle>
           <DialogDescription></DialogDescription>

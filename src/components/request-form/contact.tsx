@@ -36,7 +36,11 @@ export const formSchema = z.object({
     .optional(),
 });
 
-const Contact = ({ requestValues, onPayment }: RequestWithSubmit) => {
+const Contact = ({
+  requestValues,
+  onPayment,
+  onSignature,
+}: RequestWithSubmit) => {
   const [rValues] = requestValues;
   const [loading, setLoading] = useState(false);
 
@@ -68,6 +72,11 @@ const Contact = ({ requestValues, onPayment }: RequestWithSubmit) => {
     //   Phone: ${values?.client?.phone},
     //   Date of Birth: ${values?.client?.birth_date},
     // `);
+  };
+
+  const onClickSignature = () => {
+    // console.log(form.getValues());
+    onSignature(form.getValues());
   };
 
   return (
@@ -209,10 +218,15 @@ const Contact = ({ requestValues, onPayment }: RequestWithSubmit) => {
             />
           </>
         )}
-        <Button type="submit" disabled={loading}>
-          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Submit
-        </Button>
+        <div className="flex justify-between">
+          <Button type="button" onClick={onClickSignature}>
+            Send Document for Signature
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Submit
+          </Button>
+        </div>
       </form>
     </Form>
   );

@@ -49,7 +49,6 @@ const Contact = ({
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log({ ...rValues, information: values });
     setLoading(true);
 
     onPayment(values);

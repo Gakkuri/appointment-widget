@@ -18,11 +18,13 @@ import Location from "./components/request-form/location";
 import Datetime from "./components/request-form/datetime";
 import Client from "./components/request-form/client";
 import Contact, { formSchema } from "./components/request-form/contact";
+import dayjs from "dayjs";
 
 export type Request = {
   service?: string;
   location?: string;
-  datetime?: string;
+  date?: string;
+  time?: string;
   client?: string;
 };
 
@@ -73,7 +75,15 @@ function App() {
 
   useEffect(() => {
     const searchParams = new URLSearchParams(document.location.search);
-    if (searchParams.get("widgetCheckoutDone")) alert("Payment Successful!");
+    if (searchParams.get("widgetCheckoutDone")) {
+      axios.put(
+        "https://simple-backend-pi.vercel.app/api/appointments",
+        // "http://localhost:3000/api/appointments",
+        {
+          id: searchParams.get("appointmentID"),
+        }
+      );
+    }
   }, []);
 
   const onChangePage = (addition: number) => {
@@ -81,12 +91,26 @@ function App() {
   };
 
   const onPayment = async (values: z.infer<typeof formSchema>) => {
-    const redirectUrl = `${window.location.href}?widgetCheckoutDone=true`;
-    const payerValue = values.you;
-    const { data } = await axios.get(
-      `https://simple-backend-pi.vercel.app/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}`
-      // `http://localhost:3000/api/checkout?redirect=${redirectUrl}&email=${payerValue.email}&phone=${payerValue.phone}`
+    const compiledValues = { ...requestValues, clients: values };
+
+    const { data: resData } = await axios.post(
+      "https://simple-backend-pi.vercel.app/api/appointments",
+      // "http://localhost:3000/api/appointments",
+      compiledValues
     );
+
+    const appointmentID = resData[0].id;
+    const redirect = `${window.location.href}?widgetCheckoutDone=true&appointmentID=${appointmentID}`;
+    const payerValue = values.you;
+    const { data } = await axios.post(
+      `https://simple-backend-pi.vercel.app/api/checkout`,
+      // `http://localhost:3000/api/checkout`,
+      {
+        redirect,
+        email: payerValue.email,
+      }
+    );
+
     window.location.href = data.url;
   };
 
@@ -157,6 +181,7 @@ function App() {
         return <p>Nothing Here</p>;
     }
   };
+
   return (
     <Dialog>
       <DialogTrigger className="fixed bottom-10 right-10 bg-slate-600 py-2 px-4 text-white rounded-full">
@@ -180,7 +205,16 @@ function App() {
                   step={++i}
                   label={step.label}
                   isFinished={i <= currentPage}
-                  value={requestValues?.[step.key]}
+                  value={
+                    step.key === "datetime"
+                      ? dayjs(
+                          `${dayjs(requestValues?.date).format("L")} ${
+                            requestValues?.time
+                          }`,
+                          "MM/DD/YYYY HH:mm:ss"
+                        ).format("L LT")
+                      : requestValues?.[step.key]
+                  }
                 />
               );
             })}

@@ -61,10 +61,8 @@ const Datetime = ({ onChangePage, requestValues }: RequestFormProps) => {
   const onSubmit = (time: string) => {
     setValues({
       ...values,
-      datetime: dayjs(
-        `${dayjs(date).format("L")} ${time}`,
-        "MM/DD/YYYY HH:mm:ss"
-      ).format("L LT"),
+      date: dayjs(date).format("L"),
+      time,
     });
 
     onChangePage(1);

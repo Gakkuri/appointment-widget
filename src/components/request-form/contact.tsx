@@ -22,7 +22,7 @@ export const formSchema = z.object({
     first_name: z.string().min(2).max(50),
     last_name: z.string().min(2).max(50),
     phone: z.string().min(2).max(50),
-    birth_date: z.string(),
+    address: z.string(),
     email: z.string(),
   }),
   client: z
@@ -30,7 +30,7 @@ export const formSchema = z.object({
       first_name: z.string().min(2).max(50),
       last_name: z.string().min(2).max(50),
       phone: z.string().min(2).max(50),
-      birth_date: z.string(),
+      address: z.string(),
       email: z.string(),
     })
     .optional(),
@@ -123,6 +123,19 @@ const Contact = ({
         />
         <FormField
           control={form.control}
+          name="you.address"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Address</FormLabel>
+              <FormControl>
+                <Input placeholder="Address" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="you.phone"
           render={({ field }) => (
             <FormItem>
@@ -134,19 +147,7 @@ const Contact = ({
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="you.birth_date"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Date of birth</FormLabel>
-              <FormControl>
-                <Input placeholder="Date of birth" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
         {rValues?.client !== "me" && (
           <>
             <h1 className="font-bold text-lg">Client</h1>
@@ -191,12 +192,12 @@ const Contact = ({
             />
             <FormField
               control={form.control}
-              name="client.phone"
+              name="client.address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone</FormLabel>
+                  <FormLabel>Address</FormLabel>
                   <FormControl>
-                    <Input placeholder="Phone" {...field} />
+                    <Input placeholder="Address" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -204,12 +205,12 @@ const Contact = ({
             />
             <FormField
               control={form.control}
-              name="client.birth_date"
+              name="client.phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Date of birth</FormLabel>
+                  <FormLabel>Phone</FormLabel>
                   <FormControl>
-                    <Input placeholder="Date of birth" {...field} />
+                    <Input placeholder="Phone" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Card,
   CardDescription,
@@ -6,43 +7,42 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "react-query";
 import { RequestFormProps } from "@/App";
-
-const ServicesList = [
-  {
-    label: "Service 1",
-    time: "1 hour",
-  },
-  {
-    label: "Service 2",
-    time: "15 minutes",
-  },
-  {
-    label: "Service 3",
-    time: "5 minutes",
-  },
-];
+import { axiosRequest } from "@/lib/axios-request";
+import { TypeService } from "@/App";
 
 const Service = ({ onChangePage, requestValues }: RequestFormProps) => {
   const [values, setValues] = requestValues;
-  const onSelect = (service: { label: string; time: string }) => {
+  const [services, setServices] = useState<TypeService[]>([]);
+
+  const { isLoading, error } = useQuery<TypeService[]>(
+    "services",
+    () => {
+      return axiosRequest("get", "api/services").then((res) => res.data);
+    },
+    { onSuccess: setServices }
+  );
+
+  console.log(services);
+  const onSelect = (service: TypeService) => {
     setValues({
       ...values,
-      service: service.label,
+      service,
     });
     onChangePage(1);
   };
 
   return (
     <div className="flex flex-col w-full">
-      {ServicesList.map((service) => (
+      {services.map((service) => (
         <Card
           className="flex justify-between items-center my-2"
-          key={service.label}
+          key={service.id}
         >
           <CardHeader>
-            <CardTitle>{service.label}</CardTitle>
-            <CardDescription>{service.time}</CardDescription>
+            <CardTitle>{service.name}</CardTitle>
+            <CardDescription>{`${service.time} minutes`}</CardDescription>
           </CardHeader>
           <CardFooter className="py-0">
             <Button onClick={() => onSelect(service)}>Select</Button>

@@ -18,11 +18,29 @@ import Location from "./components/request-form/location";
 import Datetime from "./components/request-form/datetime";
 import Client from "./components/request-form/client";
 import Contact, { formSchema } from "./components/request-form/contact";
+
+import { axiosRequest } from "./lib/axios-request";
 import dayjs from "dayjs";
 
+export type TypeService = {
+  id: number;
+  name: string;
+  description: string;
+  cost: number;
+  time: number;
+};
+
+export type TypeLocation = {
+  id: number;
+  name: string;
+  address: string;
+  timezone: string;
+  virtual: boolean;
+};
+
 export type Request = {
-  service?: string;
-  location?: string;
+  service?: TypeService;
+  location?: TypeLocation;
   date?: string;
   time?: string;
   client?: string;
@@ -76,35 +94,56 @@ function App() {
   useEffect(() => {
     const searchParams = new URLSearchParams(document.location.search);
     if (searchParams.get("widgetCheckoutDone")) {
-      axios.put(
-        "https://simple-backend-pi.vercel.app/api/appointments",
-        // "http://localhost:3000/api/appointments",
-        {
-          id: searchParams.get("appointmentID"),
-        }
-      );
+      axiosRequest("put", `api/appointments`, {
+        data: { id: searchParams.get("appointmentID") },
+      });
     }
   }, []);
+
+  console.log(requestValues);
 
   const onChangePage = (addition: number) => {
     setCurrentPage((current) => current + addition);
   };
 
   const onPayment = async (values: z.infer<typeof formSchema>) => {
-    const compiledValues = { ...requestValues, clients: values };
+    // const compiledValues = { ...requestValues, clients: values };
 
-    const { data: resData } = await axios.post(
-      "https://simple-backend-pi.vercel.app/api/appointments",
-      // "http://localhost:3000/api/appointments",
-      compiledValues
+    const { data: userData } = await axiosRequest(
+      "post",
+      "api/users/patients",
+      {
+        data: {
+          name: `${values.you.first_name} ${values.you.last_name}`,
+          email: values.you.email,
+          address: values.you.address,
+          phone: values.you.phone,
+        },
+      }
     );
+
+    console.log(userData);
+
+    const { data: resData } = await axiosRequest("post", "api/appointments", {
+      data: {
+        location_id: requestValues?.location?.id,
+        service_id: requestValues?.service?.id,
+        date: requestValues?.date,
+        time: requestValues?.time,
+        minutes: requestValues?.service?.time,
+        provider: null,
+        patient: userData?.[0]?.id,
+      },
+    });
+
+    console.log(resData);
 
     const appointmentID = resData[0].id;
     const redirect = `${window.location.href}?widgetCheckoutDone=true&appointmentID=${appointmentID}`;
     const payerValue = values.you;
     const { data } = await axios.post(
-      `https://simple-backend-pi.vercel.app/api/checkout`,
-      // `http://localhost:3000/api/checkout`,
+      // `https://simple-backend-pi.vercel.app/api/checkout`,
+      `http://localhost:3000/api/checkout`,
       {
         redirect,
         email: payerValue.email,
@@ -124,10 +163,11 @@ function App() {
   // };
 
   const onSignature = async (values: z.infer<typeof formSchema>) => {
-    const { data } = await axios.get(
-      `https://simple-backend-pi.vercel.app/api/signature?redirect=${window.location.href}&signerEmail=${values.you.email}&signerName=${values.you.first_name} ${values.you.last_name}`
-      // `http://localhost:3000/api/signature?redirect=${window.location.href}&signerEmail=${values.you.email}&signerName=${values.you.first_name} ${values.you.last_name}`
+    const { data } = await axiosRequest(
+      "get",
+      `api/signature?redirect=${window.location.href}&signerEmail=${values.you.email}&signerName=${values.you.first_name} ${values.you.last_name}`
     );
+
     console.log(data);
     alert("Document successfully sent to your email!");
   };
@@ -213,7 +253,8 @@ function App() {
                           }`,
                           "MM/DD/YYYY HH:mm:ss"
                         ).format("L LT")
-                      : requestValues?.[step.key]
+                      : requestValues?.[step.key]?.name ||
+                        requestValues?.[step.key]
                   }
                 />
               );

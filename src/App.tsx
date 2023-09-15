@@ -215,7 +215,7 @@ function App() {
 
   return (
     <Dialog>
-      <DialogTrigger className="fixed bottom-10 right-10 bg-slate-600 py-2 px-4 text-white rounded-full">
+      <DialogTrigger className="fixed z-50 bottom-10 right-10 bg-slate-600 py-2 px-4 text-white rounded-full">
         Appointment
       </DialogTrigger>
       <DialogContent className="max-w-4xl">

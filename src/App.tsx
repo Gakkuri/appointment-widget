@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import * as z from "zod";
 import "./App.css";
 
@@ -100,8 +99,6 @@ function App() {
     }
   }, []);
 
-  console.log(requestValues);
-
   const onChangePage = (addition: number) => {
     setCurrentPage((current) => current + addition);
   };
@@ -122,8 +119,6 @@ function App() {
       }
     );
 
-    console.log(userData);
-
     const { data: resData } = await axiosRequest("post", "api/appointments", {
       data: {
         location_id: requestValues?.location?.id,
@@ -136,19 +131,15 @@ function App() {
       },
     });
 
-    console.log(resData);
-
     const appointmentID = resData[0].id;
     const redirect = `${window.location.href}?widgetCheckoutDone=true&appointmentID=${appointmentID}`;
     const payerValue = values.you;
-    const { data } = await axios.post(
-      // `https://simple-backend-pi.vercel.app/api/checkout`,
-      `http://localhost:3000/api/checkout`,
-      {
+    const { data } = await axiosRequest("post", "api/checkout", {
+      data: {
         redirect,
         email: payerValue.email,
-      }
-    );
+      },
+    });
 
     window.location.href = data.url;
   };

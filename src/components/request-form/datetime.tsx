@@ -177,7 +177,7 @@ const Datetime = ({ onChangePage, requestValues }: RequestFormProps) => {
       .add(values?.service?.time || 0, "minutes")
       .format("HH:mm:ss");
 
-    const result = availabilities
+    const availabilityResult = availabilities
       .filter((availability) => !filterDates(date, availability))
       .some((availability) => {
         if (
@@ -199,7 +199,7 @@ const Datetime = ({ onChangePage, requestValues }: RequestFormProps) => {
         return true;
       });
 
-    const result2 = appointments
+    const appointmentResult = appointments
       .filter((appointment) => dayjs(appointment.date).isSame(dayjs(date)))
       .every((appointment) => {
         const appointmentEnd = dayjs(appointment.time, "HH:mm:ss")
@@ -212,7 +212,7 @@ const Datetime = ({ onChangePage, requestValues }: RequestFormProps) => {
         );
       });
 
-    return result && result2;
+    return availabilityResult && appointmentResult;
   };
 
   const formatTime = (time: string) => {

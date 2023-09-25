@@ -175,6 +175,7 @@ const Datetime = ({ onChangePage, requestValues }: RequestFormProps) => {
   const isAvailable = (time: string) => {
     const endTime = dayjs(time, "HH:mm:ss")
       .add(values?.service?.time || 0, "minutes")
+      .subtract(1, "second")
       .format("HH:mm:ss");
 
     const availabilityResult = availabilities
@@ -204,6 +205,7 @@ const Datetime = ({ onChangePage, requestValues }: RequestFormProps) => {
       .every((appointment) => {
         const appointmentEnd = dayjs(appointment.time, "HH:mm:ss")
           .add(appointment.minutes || 0, "minutes")
+          .subtract(1, "second")
           .format("HH:mm:ss");
 
         return (

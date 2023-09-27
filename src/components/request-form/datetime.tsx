@@ -75,8 +75,8 @@ const Timezones = [
 
 const Time = ({ time, onClick, value, disabled }: Time) => (
   <div
-    className={`border-[1px] px-4 py-2 rounded-full cursor-pointer m-2${
-      disabled ? " cursor-not-allowed bg-neutral-300" : ""
+    className={`border-[1px] px-4 py-2 rounded-full m-2 ${
+      disabled ? "cursor-not-allowed bg-neutral-300" : "cursor-pointer"
     }`}
     onClick={() => (disabled ? null : onClick(value))}
   >
@@ -201,19 +201,23 @@ const Datetime = ({ onChangePage, requestValues }: RequestFormProps) => {
       });
 
     const appointmentResult = appointments
-      .filter((appointment) => dayjs(appointment.date).isSame(dayjs(date)))
+      .filter((appointment) =>
+        dayjs(appointment.date).isSame(dayjs(date).startOf("d"))
+      )
       .every((appointment) => {
         const appointmentEnd = dayjs(appointment.time, "HH:mm:ss")
           .add(appointment.minutes || 0, "minutes")
           .subtract(1, "second")
           .format("HH:mm:ss");
 
+        if (time === "09:00:00")
+          console.log(time, endTime, appointment.time, appointmentEnd);
+
         return (
           filterTimes(time, appointment.time, appointmentEnd) &&
           filterTimes(endTime, appointment.time, appointmentEnd)
         );
       });
-
     return availabilityResult && appointmentResult;
   };
 
@@ -223,6 +227,8 @@ const Datetime = ({ onChangePage, requestValues }: RequestFormProps) => {
       .tz(selectedTimezone)
       .format("LT");
   };
+
+  if (appointmentLoading || availabilityLoading) return <div>Loading...</div>;
 
   return (
     <div className="flex">

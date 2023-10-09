@@ -19,7 +19,7 @@ const Service = ({ onChangePage, requestValues }: RequestFormProps) => {
   const { isLoading, error } = useQuery<TypeService[]>(
     "services",
     () => {
-      return axiosRequest("get", "api/services").then((res) => res.data);
+      return axiosRequest("get", "1/services").then((res) => res.data);
     },
     { onSuccess: setServices }
   );

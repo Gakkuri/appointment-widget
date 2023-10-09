@@ -20,7 +20,7 @@ const Location = ({ onChangePage, requestValues }: RequestFormProps) => {
   const { isLoading, error } = useQuery<TypeLocation[]>(
     "locations",
     () => {
-      return axiosRequest("get", "api/locations").then((res) => res.data);
+      return axiosRequest("get", "1/locations").then((res) => res.data);
     },
     { onSuccess: setLocations }
   );

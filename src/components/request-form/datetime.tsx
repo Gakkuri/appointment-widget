@@ -100,7 +100,7 @@ const Datetime = ({ onChangePage, requestValues }: RequestFormProps) => {
   >(
     "appointments",
     () => {
-      return axiosRequest("get", "api/appointments").then((res) => res.data);
+      return axiosRequest("get", "1/appointments").then((res) => res.data);
     },
     {
       onSuccess: (v) => {
@@ -122,7 +122,7 @@ const Datetime = ({ onChangePage, requestValues }: RequestFormProps) => {
   } = useQuery<Availability[]>(
     ["availabilities"],
     () => {
-      return axiosRequest("get", "api/availabilities").then((res) => res.data);
+      return axiosRequest("get", "1/availabilities").then((res) => res.data);
     },
     {
       onSuccess: (v) => {
@@ -160,7 +160,7 @@ const Datetime = ({ onChangePage, requestValues }: RequestFormProps) => {
   };
 
   const filterTimes = (time: string, start: string, end: string) => {
-    return !dayjs(time, "HH:mm:ss").isBetween(
+    return dayjs(time, "HH:mm:ss").isBetween(
       dayjs(start, "HH:mm:ss"),
       dayjs(end, "HH:mm:ss"),
       null,
@@ -178,47 +178,80 @@ const Datetime = ({ onChangePage, requestValues }: RequestFormProps) => {
       .subtract(1, "second")
       .format("HH:mm:ss");
 
-    const availabilityResult = availabilities
-      .filter((availability) => !filterDates(date, availability))
-      .some((availability) => {
-        if (
-          dayjs(time, "HH:mm:ss").isBefore(
-            dayjs(availability.start_time, "HH:mm:ss")
-          )
-        ) {
-          return false;
-        }
+    const filteredAvailability = availabilities.filter(
+      (availability) => !filterDates(date, availability)
+    );
 
-        if (
-          dayjs(endTime, "HH:mm:ss").isAfter(
-            dayjs(availability.end_time, "HH:mm:ss")
-          )
-        ) {
-          return false;
-        }
+    const filteredAppointments = appointments.filter((appointment) =>
+      dayjs(appointment.date).isSame(dayjs(date).startOf("d"))
+    );
 
-        return true;
-      });
+    // const availabilityResult = filteredAvailability.some((availability) => {
+    //   if (
+    //     dayjs(time, "HH:mm:ss").isBefore(
+    //       dayjs(availability.start_time, "HH:mm:ss")
+    //     )
+    //   ) {
+    //     return false;
+    //   }
 
-    const appointmentResult = appointments
-      .filter((appointment) =>
-        dayjs(appointment.date).isSame(dayjs(date).startOf("d"))
-      )
-      .every((appointment) => {
-        const appointmentEnd = dayjs(appointment.time, "HH:mm:ss")
-          .add(appointment.minutes || 0, "minutes")
-          .subtract(1, "second")
-          .format("HH:mm:ss");
+    //   if (
+    //     dayjs(endTime, "HH:mm:ss").isAfter(
+    //       dayjs(availability.end_time, "HH:mm:ss")
+    //     )
+    //   ) {
+    //     return false;
+    //   }
 
-        if (time === "09:00:00")
-          console.log(time, endTime, appointment.time, appointmentEnd);
+    //   return true;
+    // });
 
-        return (
-          filterTimes(time, appointment.time, appointmentEnd) &&
-          filterTimes(endTime, appointment.time, appointmentEnd)
-        );
-      });
-    return availabilityResult && appointmentResult;
+    const availabilityResult = filteredAvailability.filter((availability) => {
+      if (
+        dayjs(time, "HH:mm:ss").isBefore(
+          dayjs(availability.start_time, "HH:mm:ss")
+        )
+      ) {
+        return false;
+      }
+
+      if (
+        dayjs(endTime, "HH:mm:ss").isAfter(
+          dayjs(availability.end_time, "HH:mm:ss")
+        )
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // const appointmentResult = filteredAppointments.every((appointment) => {
+    //   const appointmentEnd = dayjs(appointment.time, "HH:mm:ss")
+    //     .add(appointment.minutes || 0, "minutes")
+    //     .subtract(1, "second")
+    //     .format("HH:mm:ss");
+
+    //   return (
+    //     filterTimes(time, appointment.time, appointmentEnd) &&
+    //     filterTimes(endTime, appointment.time, appointmentEnd)
+    //   );
+    // });
+
+    const appointmentResult = filteredAppointments.filter((appointment) => {
+      const appointmentEnd = dayjs(appointment.time, "HH:mm:ss")
+        .add(appointment.minutes || 0, "minutes")
+        .subtract(1, "second")
+        .format("HH:mm:ss");
+
+      return (
+        filterTimes(time, appointment.time, appointmentEnd) ||
+        filterTimes(endTime, appointment.time, appointmentEnd)
+      );
+    });
+
+    // return availabilityResult && appointmentResult;
+    return availabilityResult.length > appointmentResult.length;
   };
 
   const formatTime = (time: string) => {

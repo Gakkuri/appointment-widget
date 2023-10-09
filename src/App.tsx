@@ -93,7 +93,7 @@ function App() {
   useEffect(() => {
     const searchParams = new URLSearchParams(document.location.search);
     if (searchParams.get("widgetCheckoutDone")) {
-      axiosRequest("put", `api/appointments`, {
+      axiosRequest("put", `1/appointments`, {
         data: { id: searchParams.get("appointmentID") },
       });
     }
@@ -106,20 +106,16 @@ function App() {
   const onPayment = async (values: z.infer<typeof formSchema>) => {
     // const compiledValues = { ...requestValues, clients: values };
 
-    const { data: userData } = await axiosRequest(
-      "post",
-      "api/users/patients",
-      {
-        data: {
-          name: `${values.you.first_name} ${values.you.last_name}`,
-          email: values.you.email,
-          address: values.you.address,
-          phone: values.you.phone,
-        },
-      }
-    );
+    const { data: userData } = await axiosRequest("post", "1/users/patients", {
+      data: {
+        name: `${values.you.first_name} ${values.you.last_name}`,
+        email: values.you.email,
+        address: values.you.address,
+        phone: values.you.phone,
+      },
+    });
 
-    const { data: resData } = await axiosRequest("post", "api/appointments", {
+    const { data: resData } = await axiosRequest("post", "1/appointments", {
       data: {
         location_id: requestValues?.location?.id,
         service_id: requestValues?.service?.id,
@@ -134,7 +130,7 @@ function App() {
     const appointmentID = resData[0].id;
     const redirect = `${window.location.href}?widgetCheckoutDone=true&appointmentID=${appointmentID}`;
     const payerValue = values.you;
-    const { data } = await axiosRequest("post", "api/checkout", {
+    const { data } = await axiosRequest("post", "checkout", {
       data: {
         redirect,
         email: payerValue.email,
@@ -156,7 +152,7 @@ function App() {
   const onSignature = async (values: z.infer<typeof formSchema>) => {
     const { data } = await axiosRequest(
       "get",
-      `api/signature?redirect=${window.location.href}&signerEmail=${values.you.email}&signerName=${values.you.first_name} ${values.you.last_name}`
+      `signature?redirect=${window.location.href}&signerEmail=${values.you.email}&signerName=${values.you.first_name} ${values.you.last_name}`
     );
 
     console.log(data);

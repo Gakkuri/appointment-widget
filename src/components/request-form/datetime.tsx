@@ -8,8 +8,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RequestFormProps } from "@/App";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -75,7 +76,7 @@ const Timezones = [
 
 const Time = ({ time, onClick, value, disabled }: Time) => (
   <div
-    className={`border-[1px] px-4 py-2 rounded-full m-2 ${
+    className={`border-[1px] text-center px-1 py-1 rounded-full my-2 ${
       disabled ? "cursor-not-allowed bg-neutral-300" : "cursor-pointer"
     }`}
     onClick={() => (disabled ? null : onClick(value))}
@@ -186,26 +187,6 @@ const Datetime = ({ onChangePage, requestValues }: RequestFormProps) => {
       dayjs(appointment.date).isSame(dayjs(date).startOf("d"))
     );
 
-    // const availabilityResult = filteredAvailability.some((availability) => {
-    //   if (
-    //     dayjs(time, "HH:mm:ss").isBefore(
-    //       dayjs(availability.start_time, "HH:mm:ss")
-    //     )
-    //   ) {
-    //     return false;
-    //   }
-
-    //   if (
-    //     dayjs(endTime, "HH:mm:ss").isAfter(
-    //       dayjs(availability.end_time, "HH:mm:ss")
-    //     )
-    //   ) {
-    //     return false;
-    //   }
-
-    //   return true;
-    // });
-
     const availabilityResult = filteredAvailability.filter((availability) => {
       if (
         dayjs(time, "HH:mm:ss").isBefore(
@@ -225,18 +206,6 @@ const Datetime = ({ onChangePage, requestValues }: RequestFormProps) => {
 
       return true;
     });
-
-    // const appointmentResult = filteredAppointments.every((appointment) => {
-    //   const appointmentEnd = dayjs(appointment.time, "HH:mm:ss")
-    //     .add(appointment.minutes || 0, "minutes")
-    //     .subtract(1, "second")
-    //     .format("HH:mm:ss");
-
-    //   return (
-    //     filterTimes(time, appointment.time, appointmentEnd) &&
-    //     filterTimes(endTime, appointment.time, appointmentEnd)
-    //   );
-    // });
 
     const appointmentResult = filteredAppointments.filter((appointment) => {
       const appointmentEnd = dayjs(appointment.time, "HH:mm:ss")
@@ -261,10 +230,62 @@ const Datetime = ({ onChangePage, requestValues }: RequestFormProps) => {
       .format("LT");
   };
 
+  const generateTime = (start: Dayjs, end: Dayjs) => {
+    const filteredAvailability = availabilities.filter((availability) => {
+      return (
+        !filterDates(date, availability) &&
+        (dayjs(availability.start_time, "HH:mm:ss").isBetween(
+          start,
+          end,
+          null,
+          "[]"
+        ) ||
+          dayjs(availability.end_time, "HH:mm:ss").isAfter(start))
+      );
+    });
+
+    const earliest = filteredAvailability.sort(
+      (a, b) =>
+        dayjs(a.start_time, "HH:mm:ss").unix() -
+        dayjs(b.start_time, "HH:mm:ss").unix()
+    )?.[0]?.start_time;
+
+    const latest = filteredAvailability.sort(
+      (a, b) =>
+        dayjs(b.end_time, "HH:mm:ss").unix() -
+        dayjs(a.end_time, "HH:mm:ss").unix()
+    )?.[0]?.end_time;
+
+    let currentTime = start.isAfter(dayjs(earliest, "HH:mm:ss"))
+      ? start
+      : dayjs(earliest, "HH:mm:ss");
+
+    const currentEnd = end.isBefore(dayjs(latest, "HH:mm:ss"))
+      ? end
+      : dayjs(filteredAvailability[0].end_time, "HH:mm:ss");
+    const timeSlots = [];
+
+    while (currentTime.isBefore(currentEnd)) {
+      const time = currentTime.format("HH:mm:ss");
+      timeSlots.push(
+        <Time
+          time={formatTime(time)}
+          value={time}
+          onClick={onSubmit}
+          disabled={!isAvailable(time)}
+        />
+      );
+      currentTime = currentTime.add(30, "m");
+    }
+    if (timeSlots.length <= 0) return <div className="text-center">--</div>;
+
+    return timeSlots;
+  };
+
   if (appointmentLoading || availabilityLoading) return <div>Loading...</div>;
 
   return (
-    <div className="flex">
+    <div className="flex items-start">
       <Calendar
         mode="single"
         selected={date}
@@ -273,7 +294,7 @@ const Datetime = ({ onChangePage, requestValues }: RequestFormProps) => {
         className="rounded-md border mr-8"
       />
 
-      <div className="mt-4">
+      <div className="mt-4 grow">
         <Select
           value={selectedTimezone}
           onValueChange={(v) => setSelectedTimezone(v)}
@@ -290,36 +311,31 @@ const Datetime = ({ onChangePage, requestValues }: RequestFormProps) => {
           </SelectContent>
         </Select>
         <h1 className="font-bold mt-2">Select Time</h1>
-        <Time
-          time={formatTime("07:00:00")}
-          value="07:00:00"
-          onClick={onSubmit}
-          disabled={!isAvailable("07:00:00")}
-        />
-        <Time
-          time={formatTime("07:30:00")}
-          value="07:30:00"
-          onClick={onSubmit}
-          disabled={!isAvailable("07:30:00")}
-        />
-        <Time
-          time={formatTime("08:00:00")}
-          value="08:00:00"
-          onClick={onSubmit}
-          disabled={!isAvailable("08:00:00")}
-        />
-        <Time
-          time={formatTime("08:30:00")}
-          value="08:30:00"
-          onClick={onSubmit}
-          disabled={!isAvailable("08:30:00")}
-        />
-        <Time
-          time={formatTime("09:00:00")}
-          value="09:00:00"
-          onClick={onSubmit}
-          disabled={!isAvailable("09:00:00")}
-        />
+        <ScrollArea className="h-[350px]">
+          <div className="grid grid-cols-3 gap-1">
+            <div className="text-center">
+              <p className="text-sm mt-2 mb-3 font-bold">Morning</p>
+              {generateTime(
+                dayjs().startOf("d"),
+                dayjs().set("hour", 11).set("minute", 59).set("second", 59)
+              )}
+            </div>
+            <div className="text-center">
+              <p className="text-sm mt-2 mb-3 font-bold">Afternoon</p>
+              {generateTime(
+                dayjs().set("hour", 12).set("minute", 0).set("second", 0),
+                dayjs().set("hour", 15).set("minute", 59).set("second", 59)
+              )}
+            </div>
+            <div className="text-center">
+              <p className="text-sm mt-2 mb-3 font-bold">Evening</p>
+              {generateTime(
+                dayjs().set("hour", 16).set("minute", 0).set("second", 0),
+                dayjs().endOf("d")
+              )}
+            </div>
+          </div>
+        </ScrollArea>
       </div>
     </div>
   );
